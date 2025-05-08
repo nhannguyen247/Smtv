@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Chính + Video Phụ Che</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    .grid { display: grid; grid: repeat(3, 1fr) / repeat(3, 1fr); width: 100vw; height: 100vh; }
+    .cell { position: relative; overflow: hidden; background: #000; }
+    .cell iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      border: 0; opacity: 0; transition: opacity 0.3s ease;
+      pointer-events: auto;
+    }
+    .overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent; /* trong suốt hoàn toàn */
+  z-index: 2;
+  pointer-events: all; /* chặn tương tác */
+}
+    .cell.covered iframe {
+      pointer-events: none; /* video bị che sẽ không nhận tương tác */
+    }
+    .logo { display: flex; align-items: center; justify-content: center; background: #f0f0f0; }
+    .logo img { max-width: 80%; max-height: 80%; display: block }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <!-- Row 1 -->
+    <div class="cell">
+      <iframe data-src="https://www.youtube.com/embed/g8pC_MwlfFQ?mute=0&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/DGagyjRhQsU?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/g8pC_MwlfFQ?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/DGagyjRhQsU?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+    <div class="cell logo">
+      <img src="logo_copyright.png" alt="Logo" onerror="this.src='https://placehold.co/150x100/cccccc/ffffff?text=Logo'" />
+    </div>
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/DGagyjRhQsU?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/g8pC_MwlfFQ?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/DGagyjRhQsU?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+    <div class="cell covered">
+      <iframe data-src="https://www.youtube.com/embed/g8pC_MwlfFQ?mute=1&enablejsapi=1&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="overlay"></div>
+    </div>
+  </div>
+
+  <script>
+    const grid = document.querySelector('.grid');
+    const fit = () => grid.style.height = window.innerHeight + 'px';
+    addEventListener('resize', fit);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fit();
+      const iframes = Array.from(document.querySelectorAll('iframe[data-src]'));
+      let loaded = 0;
+      const players = [];
+
+      const lazyLoad = () => {
+        iframes.forEach(iframe => {
+          iframe.onload = () => {
+            loaded++;
+            iframe.style.opacity = 1;
+            if (loaded === iframes.length) {
+              players.forEach(player => {
+                player.contentWindow.postMessage(JSON.stringify({
+                  event: 'command',
+                  func: 'playVideo',
+                  args: []
+                }), '*');
+              });
+            }
+          };
+          iframe.src = iframe.getAttribute('data-src');
+          players.push(iframe);
+        });
+        window.removeEventListener('click', lazyLoad);
+        window.removeEventListener('touchstart', lazyLoad);
+      };
+
+      window.addEventListener('click', lazyLoad, { once: true });
+      window.addEventListener('touchstart', lazyLoad, { once: true });
+    });
+  </script>
+</body>
+</html>;
+  </script>
+</body>
+</html>
